@@ -1,89 +1,352 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mouse-Driven Particle Text Transition</title>
+  <title>Enhanced Interactive Particle Text</title>
+  <link href="https://fonts.googleapis.com/css2?family=Satoshi:wght@400&display=swap" rel="stylesheet">
   <style>
     html, body {
       margin: 0;
       overflow: hidden;
       background: white;
-      font-family: Satoshi, Arial, sans-serif;
+      font-family: 'Satoshi', sans-serif;
+      color: white;
     }
     canvas {
       display: block;
-    }
-    #controls {
       position: absolute;
-      bottom: 20px;
-      left: 20px;
-      background: rgba(255, 255, 255, 0.8);
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 14px;
-      pointer-events: none; /* Prevent controls from blocking mouse events */
+      top: 0;
+      left: 0;
+      z-index: 0;
     }
+  .button-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 80px;
+  display: flex;
+  gap: 20px;
+  z-index: 1;
+}
+
+button {
+  padding: 12px 24px;
+  background-color: #AF0;
+  color: #000;
+  border: none;
+  border-radius: 22px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #eee;
+}
+    #controlPanel {
+      position: fixed;
+      right: 20px;
+      top: 20px;
+      width: 300px;
+      background-color: rgba(0, 0, 0, 0.7);
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 15px;
+      z-index: 10;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .control-group {
+      border-bottom: 1px solid #333;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+    .control-group h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      color: #fff;
+      font-size: 16px;
+    }
+    .slider-container {
+      margin-bottom: 5px;
+    }
+    .slider-container label {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 3px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .slider-container span {
+      font-size: 12px;
+      color: #AF0;
+    }
+    input[type="range"] {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    .toggle-controls {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: 1px solid #444;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      z-index: 11;
+    }
+    #presets {
+      margin-bottom: 15px;
+    }
+    #presets select {
+      width: 70%;
+      padding: 5px;
+      background: #222;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 4px;
+    }
+    #presets button {
+      position: relative;
+      left: auto;
+      bottom: auto;
+      transform: none;
+      padding: 5px 10px;
+      font-size: 12px;
+      margin-left: 5px;
+      background: #333;
+    }
+  .control-panel-toggle {
+  background-color: #AF0;
+  color: #000;
+}
+
+.regenerateText {
+  background-color: #AF0;
+  color: #000;
+}
   </style>
 </head>
 <body>
 <canvas id="canvas"></canvas>
-<div id="controls">
-  Move your mouse through the text to trigger transitions
+
+<div class="button-container">
+  <button id="changeTextBtn">Message</button>
+  <button class="regenerateText" id="regenerateText">Regenerate</button>
+  <button class="control-panel-toggle" id="togglePanel">Controls</button>
+</div>
+
+<div id="controlPanel" style="display: none;">
+  <div id="presets">
+    <h3>Presets</h3>
+    <select id="presetSelect">
+      <option value="default">Default</option>
+      <option value="gentle">Gentle Waves</option>
+      <option value="explosive">Explosive Entrance</option>
+      <option value="smooth">Smooth Transitions</option>
+      <option value="chaotic">Chaotic Motion</option>
+    </select>
+    <button id="applyPreset">Apply</button>
+  </div>
+
+  <!-- Particle Personality Controls -->
+  <div class="control-group">
+    <h3>Particle Personality</h3>
+    <div class="slider-container">
+      <label>Energy Range <span id="energyRangeValue">0.7 - 1.3</span></label>
+      <input type="range" id="energyMin" min="0.1" max="1.5" step="0.1" value="0.7">
+      <input type="range" id="energyMax" min="0.5" max="2.0" step="0.1" value="1.3">
+    </div>
+    <div class="slider-container">
+      <label>Curiosity Range <span id="curiosityRangeValue">0.5 - 2.0</span></label>
+      <input type="range" id="curiosityMin" min="0.1" max="1.5" step="0.1" value="0.5">
+      <input type="range" id="curiosityMax" min="0.5" max="3.0" step="0.1" value="2.0">
+    </div>
+    <div class="slider-container">
+      <label>Patience Variation <span id="patienceValue">1.0</span></label>
+      <input type="range" id="patience" min="0.1" max="2.0" step="0.1" value="1.0">
+    </div>
+  </div>
+
+  <!-- Flocking Behavior Controls -->
+  <div class="control-group">
+    <h3>Flocking Behavior</h3>
+    <div class="slider-container">
+      <label>Wave Strength <span id="waveStrengthValue">0.3</span></label>
+      <input type="range" id="waveStrength" min="0.0" max="1.0" step="0.05" value="0.3">
+    </div>
+    <div class="slider-container">
+      <label>Exploration Duration <span id="explorationDurationValue">80-240</span></label>
+      <input type="range" id="explorationDurationMin" min="20" max="200" step="10" value="80">
+      <input type="range" id="explorationDurationMax" min="100" max="400" step="10" value="240">
+    </div>
+    <div class="slider-container">
+      <label>Exploration Intensity <span id="explorationIntensityValue">0.5-2.0</span></label>
+      <input type="range" id="explorationStrengthMin" min="0.1" max="1.0" step="0.1" value="0.5">
+      <input type="range" id="explorationStrengthMax" min="1.0" max="3.0" step="0.1" value="2.0">
+    </div>
+    <div class="slider-container">
+      <label>Resolve Delay <span id="resolveDelayValue">120-200</span></label>
+      <input type="range" id="resolveDelayMin" min="50" max="150" step="10" value="120">
+      <input type="range" id="resolveDelayMax" min="150" max="300" step="10" value="200">
+    </div>
+  </div>
+
+  <!-- Movement Physics Controls -->
+  <div class="control-group">
+    <h3>Movement Physics</h3>
+    <div class="slider-container">
+      <label>Velocity Damping <span id="velocityDampingValue">0.88</span></label>
+      <input type="range" id="velocityDamping" min="0.75" max="0.98" step="0.01" value="0.88">
+    </div>
+    <div class="slider-container">
+      <label>Initial Force <span id="initialForceValue">2-6</span></label>
+      <input type="range" id="initialForceMin" min="0.5" max="5" step="0.5" value="2">
+      <input type="range" id="initialForceMax" min="2" max="10" step="0.5" value="6">
+    </div>
+    <div class="slider-container">
+      <label>Homing Strength <span id="homingStrengthValue">0.005</span></label>
+      <input type="range" id="homingStrength" min="0.001" max="0.02" step="0.001" value="0.005">
+    </div>
+    <div class="slider-container">
+      <label>Wandering Intensity <span id="wanderingIntensityValue">0.3</span></label>
+      <input type="range" id="wanderingIntensity" min="0" max="1" step="0.05" value="0.3">
+    </div>
+  </div>
+
+  <!-- Mouse Interaction Controls -->
+  <div class="control-group">
+    <h3>Mouse Interaction</h3>
+    <div class="slider-container">
+      <label>Mouse Radius <span id="mouseRadiusValue">100</span></label>
+      <input type="range" id="mouseRadius" min="50" max="300" step="10" value="100">
+    </div>
+    <div class="slider-container">
+      <label>Repulsion Force <span id="repulsionForceValue">3</span></label>
+      <input type="range" id="repulsionForce" min="0.5" max="10" step="0.5" value="3">
+    </div>
+  </div>
+
+  <!-- Animation Controls -->
+  <div class="control-group">
+    <h3>Animation Timings</h3>
+    <div class="slider-container">
+      <label>Lift-off Delay <span id="liftOffDelayValue">0-60</span></label>
+      <input type="range" id="liftOffDelayMax" min="10" max="150" step="10" value="60">
+    </div>
+    <div class="slider-container">
+      <label>Dying Duration <span id="dyingDurationValue">80</span></label>
+      <input type="range" id="dyingDuration" min="30" max="200" step="10" value="80">
+    </div>
+    <div class="slider-container">
+      <label>Opacity Fade Rate <span id="opacityFadeValue">0.02</span></label>
+      <input type="range" id="opacityFade" min="0.005" max="0.05" step="0.005" value="0.02">
+    </div>
+  </div>
+
+  <!-- Text Controls -->
+  <div class="control-group">
+    <h3>Text Settings</h3>
+    <div class="slider-container">
+      <label>Font Size <span id="fontSizeValue">48</span></label>
+      <input type="range" id="fontSize" min="24" max="72" step="2" value="48">
+    </div>
+    <div class="slider-container">
+      <label>Point Spacing <span id="pointSpacingValue">3</span></label>
+      <input type="range" id="pointSpacing" min="2" max="8" step="1" value="3">
+    </div>
+    <div class="slider-container">
+      <label>Line Height <span id="lineHeightValue">56</span></label>
+      <input type="range" id="lineHeight" min="32" max="100" step="4" value="56">
+    </div>
+  </div>
+
+
 </div>
 
 <script>
-// Add easing functions for more graceful transitions
-const easingFunctions = {
-  // Cubic easing out - decelerating to zero velocity
-  easeOutCubic: t => 1 - Math.pow(1 - t, 3),
-  // Quintic easing in-out - acceleration until halfway, then deceleration
-  easeInOutQuint: t => t < 0.5 ? 24 * t * t * t * t * t : 1 - Math.pow(-2 * t + 2, 5) / 2,
-  // Elastic effect - bouncy movement
-  easeOutElastic: t => {
-    const c4 = (2 * Math.PI) / 3;
-    return t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
-  },
-  // Sinusoidal smooth movement
-  easeInOutSine: t => -(Math.cos(Math.PI * t) - 1) / 2
+// ========================
+// CONFIGURATION PARAMETERS
+// ========================
+const config = {
+  // Particle personality traits
+  energyRange: { min: 0.7, max: 1.3 },        // How energetically particles move
+  curiosityRange: { min: 0.5, max: 2.0 },     // How far particles explore
+  patienceVariation: 1.0,                     // Multiplier for patience values
+
+  // Flocking behavior
+  waveStrength: 0.3,                          // Strength of wave patterns during flocking
+  explorationDuration: { min: 80, max: 240 }, // How long particles explore before resolving
+  explorationStrength: { min: 0.5, max: 2.0 },// How intensely particles explore
+  resolveDelay: { min: 120, max: 200 },       // Delay before particles start going home
+
+  // Movement physics
+  velocityDamping: 0.88,                      // How quickly velocity slows down (higher = less damping)
+  initialForce: { min: 2, max: 6 },           // Initial velocity when particles spawn/repurpose
+  homingStrength: 0.005,                      // How strongly particles are pulled to home position
+  wanderingIntensity: 0.3,                    // Intensity of random wandering motion
+
+  // Mouse interaction
+  mouseRadius: 100,                           // Radius of mouse influence
+  repulsionForce: 3,                          // How strongly particles are pushed by mouse
+
+  // Animation timings
+  liftOffDelay: { max: 60 },                  // Maximum time before particles start moving
+  dyingDuration: 80,                          // How long particles take to fade out
+  opacityFadeRate: 0.02,                      // How quickly dying particles fade out
+
+  // Text settings
+  fontSize: 64,                               // Size of font for text rendering
+  pointSpacing: 3,                            // Spacing between points on text
+  lineHeight: 72                              // Line height for multi-line text
 };
 
-const config = {
-  velocityDamping: 0.80,
-  homingStrength: 0.012,
-  wanderingIntensity: 0.08,
-  mouseRadiusMin: 10,       // Minimum mouse radius
-  mouseRadiusMax: 120,      // Maximum mouse radius
-  mouseRadiusDefault: 100,  // Default radius (used when mouse is not on screen)
-  mouseProximityRange: 300, // How far from center the radius starts scaling
-  repulsionForce: 12,
-  fontSize: 64,
-  pointSpacing: 4,
-  lineHeight: 70,
-  transitionSpeed: 0.5, // Slightly slowed down for more fluid motion
-  arcFactor: 0.02, // Reduced slightly for more natural arcs
-  textPhrases: ["Are you creating\n new possibilities or \nefficiently executing within\nestablished boundaries?", "This is just\na test to see\nif this works", "we need to\nkeep our time\nvery precious", "Dynamic Text\ncan be great\nif you talk", "You migh\njust need to\nstop trying so hard."],
-  mouseTransitionThreshold: 350, // Reduced threshold for easier triggering
-  transitionCooldown: 3000,
-  mouseExposureDecay: 0.3,
-  stabilityThreshold: 5,
-  stableWanderingFactor: 0.1,
-  easingFunction: "easeInOutSine", // Default easing function
-  pathType: "figure8",        // NEW: Default path type set to figure8
-  colorTransition: true,      // Enable color transitions
-  groupTransition: true,      // Enable group-based transitions
-  transitionGroups: 5,        // Number of particle groups for staggered transitions
-  maxPathRandomization: 0.3,  // Maximum randomization for particle paths
-  minParticleSize: 1,         // Minimum size for unused particles
-  maxParticleSize: 3,         // Maximum size for active particles
-  sizeTransitionSpeed: 0.05,  // How quickly particles change size
-  randomizeActiveParticleSize: true,  // Enable random sizes for active particles
-  figure8Size: 50,           // NEW: Size of the figure-8 loops
-  figure8Variation: true,    // NEW: Randomize figure-8 properties per particle
-  wiggleEnabled: true,       // Enable wiggle effect during transition
-  wiggleFrequency: 0.3,      // Frequency of wiggle oscillation
-  wiggleAmplitude: 5,        // Maximum amplitude of wiggle
-  wiggleProgressFactor: 1.5   // Controls wiggle peak timing
+// Presets for quick configuration changes
+const presets = {
+  default: { ...config },
+  gentle: {
+    ...config,
+    waveStrength: 0.2,
+    explorationDuration: { min: 60, max: 120 },
+    explorationStrength: { min: 0.3, max: 1.0 },
+    velocityDamping: 0.92,
+    initialForce: { min: 1, max: 3 },
+    wanderingIntensity: 0.2,
+  },
+  explosive: {
+    ...config,
+    energyRange: { min: 1.0, max: 1.8 },
+    waveStrength: 0.5,
+    explorationDuration: { min: 120, max: 280 },
+    explorationStrength: { min: 1.0, max: 3.0 },
+    initialForce: { min: 4, max: 10 },
+    wanderingIntensity: 0.6,
+    velocityDamping: 0.85,
+  },
+  smooth: {
+    ...config,
+    velocityDamping: 0.94,
+    waveStrength: 0.15,
+    homingStrength: 0.003,
+    explorationDuration: { min: 100, max: 180 },
+    wanderingIntensity: 0.15,
+    initialForce: { min: 1, max: 3 },
+  },
+  chaotic: {
+    ...config,
+    waveStrength: 0.8,
+    explorationStrength: { min: 1.5, max: 3.0 },
+    wanderingIntensity: 0.8,
+    velocityDamping: 0.82,
+    homingStrength: 0.002,
+    initialForce: { min: 3, max: 8 },
+  }
 };
 
 const canvas = document.getElementById("canvas");
@@ -95,806 +358,668 @@ let particles = [];
 let mouse = {
   x: null,
   y: null,
-  radius: config.mouseRadiusDefault
+  radius: config.mouseRadius
 };
-let currentPhraseIndex = 0;
-let nextPhraseIndex = 1;
-let transitionProgress = 0;
-let isTransitioning = false;
-let lastTransitionTime = 0;
-let affectedParticlesCount = 0;
-let colorSchemes = [
-  { base: [255, 0, 100], active: [255, 50, 150] },     // Neon red to hot pink
-  { base: [200, 0, 255], active: [255, 100, 255] },    // Electric purple to bright magenta
-  { base: [255, 20, 200], active: [255, 100, 255] },   // Hot pink to electric magenta
-  { base: [150, 0, 200], active: [170, 255, 0] },      // Deep purple to neon lime (af0)
-  { base: [255, 0, 150], active: [255, 80, 200] },     // Electric pink to neon magenta
-  { base: [200, 50, 255], active: [255, 150, 255] },   // Bright purple to electric pink
-  { base: [180, 0, 120], active: [170, 255, 0] },      // Purple-red to neon lime (af0)
-  { base: [255, 30, 80], active: [255, 100, 180] }     // Neon red to bright pink
+let textIndex = 0;
+const texts = [
+  "I’m Odin — I'm a creative and\ndesign for emerging tech.\n Currently Buulding FireTim.",
+  "What are you prepared\nto do for change",
+  "Make space.\nLet it land.\nThen shape it.",
+  "Nothing clever survives a blank page.\nBe dumb enough to begin.",
+  "Create a mess.\nInvite surprise.\nSteal the ending.",
+  "The muse is bored.\nYou're too reasonable.\nTry being possessed instead."
 ];
-let currentColorScheme = 0;
-let nextColorScheme = 0;
 
-// Add text center tracking
-let textCenter = { x: 0, y: 0 };
-
-// Cache for target points
-const cachedTargetPoints = {};
-
+// =========================
+// PARTICLE CLASS DEFINITION
+// =========================
 class Particle {
-  constructor(homeX, homeY, nextHomeX, nextHomeY) {
-    this.homeX = homeX;
-    this.homeY = homeY;
-    this.nextHomeX = nextHomeX || homeX;
-    this.nextHomeY = nextHomeY || homeY;
-    this.x = Math.random() * canvas.width;
-    this.y = Math.random() * canvas.height;
+  constructor(x, y, startX = null, startY = null) {
+    // Home position (target coordinates)
+    this.homeX = x;
+    this.homeY = y;
+
+    // Current position (where particle is currently drawn)
+    this.x = startX !== null ? startX : Math.random() * canvas.width;
+    this.y = startY !== null ? startY : Math.random() * canvas.height;
+
+    // Velocity components
     this.vx = 0;
     this.vy = 0;
-    this.opacity = 1;  // Full by default
-    this.isActive = true; // Whether it should be visible
-    this.targetSize = config.maxParticleSize;
-    this.size = Math.random() * (config.maxParticleSize - config.minParticleSize) + config.minParticleSize;
-    this.t = Math.random() * 2000;
-    this.transitionDelay = Math.random() * 0.5;
-    this.individualProgress = 0;
-    this.arcHeight = (Math.random() * 0.5 + 0.5) * 200;
-    this.arcDirection = Math.random() > 0.5 ? 1 : -1;
-    this.mouseExposure = 0;
-    this.isAffectedByMouse = false;
-    this.transitionGroup = Math.floor(Math.random() * config.transitionGroups); // Assign to a transition group
 
-    // Path type options now include figure8
-    this.pathType = "figure8"; // Set default to figure8
+    // Appearance and state
+    this.size = 1;
+    this.t = Math.random() * 1000; // Time variable for wave patterns
+    this.opacity = 0;
+    this.color = "white";
+    this.state = "idle"; // idle, flocking, resolving, or dying
 
-    // For bezier paths (if used)
-    this.bezierControlPoint1 = {
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height
-    };
-    this.bezierControlPoint2 = {
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height
-    };
+    // Animation timing variables
+    this.resolveDelay = 0;        // Time before starting to resolve
+    this.liftOffDelay = 0;        // Time before starting to move
+    this.explorationPhase = 0;    // Duration of exploration phase
+    this.explorationStrength = 0; // Intensity of exploration
+    this.dyingDelay = 0;          // Time before starting to fade out
+    this.dyingTimer = config.dyingDuration; // How long dying animation lasts
+    this.dead = false;
 
-    // NEW: Figure-8 properties
-    this.figure8Size = config.figure8Size * (0.5 + Math.random() * 0.5); // Random size multiplier
-    this.figure8Angle = Math.random() * Math.PI * 2; // Random orientation of figure 8
-    this.figure8Direction = Math.random() > 0.5 ? 1 : -1; // Random direction
-
-    this.pathRandomization = Math.random() * config.maxPathRandomization;
-    this.baseColor = [...colorSchemes[currentColorScheme].base];
-    this.activeColor = [...colorSchemes[currentColorScheme].active];
-    this.nextBaseColor = [...colorSchemes[nextColorScheme].base];
-    this.nextActiveColor = [...colorSchemes[nextColorScheme].active];
-    this.isUsedInCurrentPhrase = true;
-    this.isUsedInNextPhrase = true;
-    this.randomSizeAssigned = false; // Track if this particle has been assigned a random size
-
-    // Wiggle properties
-    this.wigglePhaseOffset = Math.random() * Math.PI * 2; // Random starting phase
-    this.wiggleDirection = Math.random() * Math.PI * 2;   // Random wiggle direction
-    this.wiggleFactor = 0.5 + Math.random();              // Randomize wiggle intensity per particle
+    // Personality traits
+    this.energy = config.energyRange.min + Math.random() * (config.energyRange.max - config.energyRange.min);
+    this.curiosity = config.curiosityRange.min + Math.random() * (config.curiosityRange.max - config.curiosityRange.min);
+    this.patience = Math.random() * config.patienceVariation;
   }
 
+  // Draw the particle
   draw() {
-    // Only draw if particle is reasonably within view
-    if (this.x < -mouse.radius * 2 || this.x > canvas.width + this.size * 2 || this.y < -this.size * 2 || this.y > canvas.height + this.size * 2) {
-        return;
-    }
-
-    const distToTarget = Math.sqrt(
-      Math.pow(this.x - (this.individualProgress > 0 ? this.nextHomeX : this.homeX), 2) +
-      Math.pow(this.y - (this.individualProgress > 0 ? this.nextHomeY : this.homeY), 2)
-    );
-
-    const alpha = Math.min(1, 3 / (1 + distToTarget * 0.05));
-
-    // Calculate color based on mouse exposure and transition progress
-    let r, g, b;
-
-    if (config.colorTransition && isTransitioning) {
-      // Interpolate between current and next color schemes
-      const baseR = this.baseColor[0] + (this.nextBaseColor[0] - this.baseColor[0]) * this.individualProgress;
-      const baseG = this.baseColor[1] + (this.nextBaseColor[1] - this.baseColor[1]) * this.individualProgress;
-      const baseB = this.baseColor[2] + (this.nextBaseColor[2] - this.baseColor[2]) * this.individualProgress;
-
-      const activeR = this.activeColor[0] + (this.nextActiveColor[0] - this.activeColor[0]) * this.individualProgress;
-      const activeG = this.activeColor[1] + (this.nextActiveColor[1] - this.activeColor[1]) * this.individualProgress;
-      const activeB = this.activeColor[2] + (this.nextActiveColor[2] - this.activeColor[2]) * this.individualProgress;
-
-      r = baseR + (activeR - baseR) * this.mouseExposure;
-      g = baseG + (activeG - baseG) * this.mouseExposure;
-      b = baseB + (activeB - baseB) * this.mouseExposure;
-    } else {
-      // Just use the current color scheme
-      r = this.baseColor[0] + (this.activeColor[0] - this.baseColor[0]) * this.mouseExposure;
-      g = this.baseColor[1] + (this.activeColor[1] - this.baseColor[1]) * this.mouseExposure;
-      b = this.baseColor[2] + (this.activeColor[2] - this.baseColor[2]) * this.mouseExposure;
-    }
-
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    ctx.arc(this.x, this.y, this.size, 1.6, Math.PI * 2);
+    ctx.fillStyle = `rgba(0,0,0,${this.opacity})`;
     ctx.fill();
   }
 
+  // Update particle position and state
   update() {
-    this.t += 1;
-    this.isAffectedByMouse = false;
+    this.t += 1; // Increment time variable for wave patterns
 
-    this.mouseExposure *= config.mouseExposureDecay;
+    // =====================
+    // FLOCKING STATE LOGIC
+    // =====================
+    if (this.state === "flocking") {
+      // Handle lift-off delay (staggered start)
+      if (this.liftOffDelay > 0) {
+        this.liftOffDelay--;
+        return this.draw();
+      }
 
-    // Update particle size based on whether it's used in current or next phrase
-    let currentFrameTargetSize;
-    if (isTransitioning) {
-      // During transition, interpolate size based on usage in next phrase
-      if (this.isUsedInNextPhrase) {
-        if (config.randomizeActiveParticleSize && !this.randomSizeAssigned) {
-          this.targetSize = Math.random() * (config.maxParticleSize - config.minParticleSize) + config.minParticleSize;
-          this.randomSizeAssigned = true;
-        } else if (!config.randomizeActiveParticleSize) {
-          this.targetSize = config.maxParticleSize;
+      // Enhanced flocking behavior with exploration
+      const wave = config.waveStrength * this.energy;
+
+      // Add swirling patterns
+      this.vx += Math.sin(this.t * 0.07 + this.x * 0.009) * wave;
+      this.vy += Math.cos(this.t * 0.02 + this.y * 0.002) * wave;
+
+      // Occasional bursts of energy
+      if (Math.random() < 0.02) {
+        this.vx += (Math.random() - 0.5) * 3 * this.energy;
+        this.vy += (Math.random() - 0.5) * 3 * this.energy;
+      }
+
+      // EXPLORATION PHASE - more expansive movement before settling
+      if (this.explorationPhase > 0) {
+        this.explorationPhase--;
+
+        // Create graceful arcs and curves
+        const angle = this.t * 0.01 * this.energy;
+        const radius = 50 * this.curiosity;
+        this.vx += Math.sin(angle) * 0.2 * this.explorationStrength;
+        this.vy += Math.cos(angle) * 0.2 * this.explorationStrength;
+
+        // Occasionally change direction dramatically
+        if (Math.random() < 0.01) {
+          const randomAngle = Math.random() * Math.PI * 2;
+          const force = 2 * this.curiosity;
+          this.vx += Math.cos(randomAngle) * force;
+          this.vy += Math.sin(randomAngle) * force;
+        }
+
+        // Subtle attraction to center so particles don't go too far off-screen
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const distToCenter = Math.hypot(centerX - this.x, centerY - this.y);
+        if (distToCenter > canvas.width * 0.4) {
+          this.vx += (centerX - this.x) * 0.0001;
+          this.vy += (centerY - this.y) * 0.0001;
         }
       } else {
-        this.targetSize = config.minParticleSize;
-        this.randomSizeAssigned = false;
+        // Start gradually becoming aware of the target position
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        this.vx += (centerX - this.x) * 0.0005;
+        this.vy += (centerY - this.y) * 0.0005;
+
+        // Count down to resolving state
+        this.resolveDelay--;
+        if (this.resolveDelay <= 0) {
+          this.state = "resolving";
+        }
       }
+    }
 
-      // FIXED: Interpolate size based on transition progress
-      // Get the size the particle should be at its current position in the transition
-      const currentSize = this.isUsedInCurrentPhrase ?
-        (config.randomizeActiveParticleSize ? this.size : config.maxParticleSize) :
-        config.minParticleSize;
+    // ============================
+    // RESOLVING & IDLE STATE LOGIC
+    // ============================
+    if (this.state === "resolving" || this.state === "idle") {
+      // Calculate distance to home position
+      let dxHome = this.homeX - this.x;
+      let dyHome = this.homeY - this.y;
+      let distHome = Math.sqrt(dxHome * dxHome + dyHome * dyHome);
 
-      // Interpolate between current size and target size based on individual progress
-      currentFrameTargetSize = currentSize + (this.targetSize - currentSize) * this.individualProgress;
+      if (distHome > 0.5) {
+        // Enhanced resolving with more graceful approach
+        let noiseStrength = Math.min(1, distHome / 100);
+        const wander = config.wanderingIntensity * noiseStrength;
 
-    } else {
-      // Not in transition, size based on current phrase usage
-      if (this.isUsedInCurrentPhrase) {
-        if (config.randomizeActiveParticleSize && !this.randomSizeAssigned) {
-          this.targetSize = Math.random() * (config.maxParticleSize - config.minParticleSize) + config.minParticleSize;
-          this.randomSizeAssigned = true;
-        } else if (!config.randomizeActiveParticleSize) {
-          this.targetSize = config.maxParticleSize;
+        // Stronger homing behavior based on distance
+        const homingStrength = config.homingStrength * (1 + distHome / 500);
+        this.vx += dxHome * homingStrength;
+        this.vy += dyHome * homingStrength;
+
+        // More organic wandering en route
+        this.vx += Math.sin(this.t * 0.05 + this.x * 0.01) * wander;
+        this.vy += Math.cos(this.t * 0.05 + this.y * 0.01) * wander;
+
+        // Occasionally take a scenic route
+        if (Math.random() < 0.005 && distHome > 100) {
+          const perpendicularAngle = Math.atan2(dyHome, dxHome) + Math.PI/2;
+          const deviation = Math.sin(this.t * 0.01) * 1.5;
+          this.vx += Math.cos(perpendicularAngle) * deviation;
+          this.vy += Math.sin(perpendicularAngle) * deviation;
         }
       } else {
-        this.targetSize = config.minParticleSize;
-        this.randomSizeAssigned = false;
+        // Subtle movement when at home position
+        this.vx += (Math.random() - 0.5) * 0.1;
+        this.vy += (Math.random() - 0.5) * 0.1;
       }
-      currentFrameTargetSize = this.targetSize;
     }
 
-    // Smoothly transition size to current frame target
-    if (isTransitioning) {
-      // During transition, size changes with position
-      this.size = currentFrameTargetSize;
+    // ==================
+    // DYING STATE LOGIC
+    // ==================
+    if (this.state === "dying") {
+      if (this.dyingDelay > 0) {
+        this.dyingDelay--;
+      } else {
+        // Enhanced dying animation
+        this.vx += (Math.random() - 0.5) * 2;
+        this.vy += (Math.random() - 0.5) * 2;
+
+        this.vx *= 0.96;
+        this.vy *= 0.96;
+
+        // Rotational flutter
+        this.x += Math.sin(this.t * 0.2) * 0.5;
+        this.y += Math.cos(this.t * 0.2) * 0.5;
+
+        // Gradually fade out
+        this.opacity -= config.opacityFadeRate;
+        this.dyingTimer--;
+        if (this.opacity <= 0 || this.dyingTimer <= 0) {
+          this.dead = true;
+        }
+      }
+    }
+
+    // =================
+    // MOUSE INTERACTION
+    // =================
+    let dxMouse = mouse.x - this.x;
+    let dyMouse = mouse.y - this.y;
+    let distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
+
+    if (distMouse < mouse.radius) {
+      const angle = Math.atan2(dyMouse, dxMouse);
+      const force = (mouse.radius - distMouse) / mouse.radius;
+      this.vx -= Math.cos(angle) * force * config.repulsionForce;
+      this.vy -= Math.sin(angle) * force * config.repulsionForce;
+      this.color = "#AF0";
+    //make particles bigger when nearer mouse
+      this.size = 2 + force * 10;
     } else {
-      // When not transitioning, gradually approach target size
-      if (this.size < currentFrameTargetSize) {
-        this.size += config.sizeTransitionSpeed;
-        if (this.size > currentFrameTargetSize) this.size = currentFrameTargetSize;
-      } else if (this.size > currentFrameTargetSize) {
-        this.size -= config.sizeTransitionSpeed;
-        if (this.size < currentFrameTargetSize) this.size = currentFrameTargetSize;
-      }
+      this.color = "white";
     }
+    //gradually return to normal size
+    this.size = Math.max(1, this.size * 0.95);
 
-    if (isTransitioning && this.individualProgress < 1) {
-      const speedMultiplier = 1 + this.mouseExposure * 2;
 
-      // Apply group-based transition delay
-      let groupDelay = 0;
-      if (config.groupTransition) {
-        groupDelay = this.transitionGroup * 0.1; // Each group is delayed by 0.1
-      }
+    // Apply velocity with damping for fluid movement
+    this.vx *= config.velocityDamping;
+    this.vy *= config.velocityDamping;
 
-      if (transitionProgress > this.transitionDelay + groupDelay) {
-        this.individualProgress += config.transitionSpeed * speedMultiplier;
-        if (this.individualProgress > 1) this.individualProgress = 1;
-      }
-    } else if (!isTransitioning) {
-      this.individualProgress = 0;
-    }
-
-    let targetX, targetY;
-    if (this.individualProgress > 0) {
-      // Apply easing to the progress
-      const easedProgress = easingFunctions[config.easingFunction](this.individualProgress);
-
-      // Calculate position based on path type
-      if (this.pathType === "bezier") {
-        // Bezier curve path
-        targetX = this.getBezierPoint(
-          this.homeX,
-          this.bezierControlPoint1.x + (this.bezierControlPoint1.x * this.pathRandomization),
-          this.bezierControlPoint2.x + (this.bezierControlPoint2.x * this.pathRandomization),
-          this.nextHomeX,
-          easedProgress
-        );
-        targetY = this.getBezierPoint(
-          this.homeY,
-          this.bezierControlPoint1.y + (this.bezierControlPoint1.y * this.pathRandomization),
-          this.bezierControlPoint2.y + (this.bezierControlPoint2.y * this.pathRandomization),
-          this.nextHomeY,
-          easedProgress
-        );
-      } else if (this.pathType === "arc") {
-        // Arc path (original implementation)
-        targetX = this.homeX + (this.nextHomeX - this.homeX) * easedProgress;
-        const arcOffset = Math.sin(easedProgress * Math.PI) * this.arcHeight * config.arcFactor;
-        targetY = this.homeY + (this.nextHomeY - this.homeY) * easedProgress +
-                  arcOffset * this.arcDirection;
-      } else if (this.pathType === "figure8") {
-        // NEW: Figure-8 path implementation
-        // Get the direct path as the center of the figure 8
-        const directX = this.homeX + (this.nextHomeX - this.homeX) * easedProgress;
-        const directY = this.homeY + (this.nextHomeY - this.homeY) * easedProgress;
-
-        // Calculate distance between start and end points
-        const dx = this.nextHomeX - this.homeX;
-        const dy = this.nextHomeY - this.homeY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        // Scale figure8Size based on distance
-        const adjustedSize = Math.min(this.figure8Size, distance * 0.4);
-
-        // Calculate angle of direction from start to end
-        const angle = Math.atan2(dy, dx);
-
-        // Create a parametric figure-8 path
-        // t goes from 0 to 2π as progress goes from 0 to 1
-        const t = easedProgress * Math.PI * 2;
-
-        // Figure-8 formula (lemniscate of Bernoulli)
-        const figure8X = adjustedSize * Math.sin(t) / (1 + Math.pow(Math.cos(t), 2));
-        const figure8Y = adjustedSize * Math.sin(t) * Math.cos(t) / (1 + Math.pow(Math.cos(t), 2));
-
-        // Rotate the figure-8 to align with the path direction
-        const rotatedX = figure8X * Math.cos(angle) - figure8Y * Math.sin(angle);
-        const rotatedY = figure8X * Math.sin(angle) + figure8Y * Math.cos(angle);
-
-        // Apply the figure-8 offset to the direct path
-        targetX = directX + rotatedX * this.figure8Direction;
-        targetY = directY + rotatedY * this.figure8Direction;
-      }
-
-      // Apply wiggle effect during transition
-      if (config.wiggleEnabled && this.isUsedInNextPhrase) {
-        // Create a wiggle that peaks in the middle of the transition
-        const wiggleProgress = Math.sin(easedProgress * Math.PI * config.wiggleProgressFactor);
-
-        // Calculate wiggle offset using sine wave with particle-specific phase
-        const wiggleTime = this.t * config.wiggleFrequency + this.wigglePhaseOffset;
-        const wiggleAmount = Math.sin(wiggleTime) * config.wiggleAmplitude * wiggleProgress * this.wiggleFactor;
-
-        // Apply wiggle in random direction
-        targetX += Math.cos(this.wiggleDirection) * wiggleAmount;
-        targetY += Math.sin(this.wiggleDirection) * wiggleAmount;
-      }
-    } else {
-      targetX = this.homeX;
-      targetY = this.homeY;
-    }
-
-    const dx = targetX - this.x;
-    const dy = targetY - this.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    const isStable = dist < config.stabilityThreshold;
-
-    const strength = config.homingStrength * (1 + dist / 500);
-    this.vx += dx * strength;
-    this.vy += dy * strength;
-
-    const wanderingScale = isStable ? config.stableWanderingFactor : 1;
-    this.vx += Math.sin(this.t * 0.08 + this.x * 0.01) * config.wanderingIntensity * wanderingScale;
-    this.vy += Math.cos(this.t * 0.08 + this.y * 0.01) * config.wanderingIntensity * wanderingScale;
-
-    if (typeof mouse.x === "number" && typeof mouse.y === "number") {
-      const dxMouse = mouse.x - this.x;
-      const dyMouse = mouse.y - this.y;
-      const distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
-
-      // Get current mouse radius (may change based on position)
-      const currentMouseRadius = mouse.radius;
-
-      if (distMouse < currentMouseRadius) {
-        this.isAffectedByMouse = true;
-        this.mouseExposure += 0.1;
-        if (this.mouseExposure > 1) this.mouseExposure = 1;
-
-        const angle = Math.atan2(dyMouse, dxMouse);
-        const force = (currentMouseRadius - distMouse) / currentMouseRadius;
-
-        this.vx -= Math.cos(angle) * force * config.repulsionForce;
-        this.vy -= Math.sin(angle) * force * config.repulsionForce;
-
-        this.vx += Math.sin(angle) * force * config.repulsionForce * 0.6;
-        this.vy -= Math.cos(angle) * force * config.repulsionForce * 0.6;
-      }
-    }
-
-    const dampingFactor = isStable ? 0.92 : config.velocityDamping;
-    this.vx *= dampingFactor;
-    this.vy *= dampingFactor;
     this.x += this.vx;
     this.y += this.vy;
 
+    // Gradually fade in particles (except when dying)
+    if (this.opacity < 1 && this.state !== "dying") this.opacity += 0.01;
+
     this.draw();
-  }
-
-  // Cubic Bezier calculation
-  getBezierPoint(p0, p1, p2, p3, t) {
-    return Math.pow(1-t, 3) * p0 +
-           3 * Math.pow(1-t, 2) * t * p1 +
-           3 * (1-t) * Math.pow(t, 2) * p2 +
-           Math.pow(t, 3) * p3;
-  }
-
-  setNextPosition(x, y) {
-    this.nextHomeX = x;
-    this.nextHomeY = y;
-  }
-
-  setNextColors(baseColor, activeColor) {
-    this.nextBaseColor = baseColor;
-    this.nextActiveColor = activeColor;
-  }
-
-  commitTransition() {
-    this.homeX = this.nextHomeX;
-    this.homeY = this.nextHomeY;
-    this.baseColor = [...this.nextBaseColor];
-    this.activeColor = [...this.nextActiveColor];
-    this.individualProgress = 0;
-    this.transitionDelay = Math.random() * 0.5;
-    this.arcHeight = (Math.random() * 0.5 + 0.5) * 200;
-    this.arcDirection = Math.random() > 0.5 ? 1 : -1;
-
-    // Update path properties
-    if (config.figure8Variation) {
-      this.figure8Size = config.figure8Size * (0.5 + Math.random() * 0.5);
-      this.figure8Angle = Math.random() * Math.PI * 2;
-      this.figure8Direction = Math.random() > 0.5 ? 1 : -1;
-    }
-
-    this.bezierControlPoint1 = {
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height
-    };
-    this.bezierControlPoint2 = {
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height
-    };
-    this.pathRandomization = Math.random() * config.maxPathRandomization;
-    this.transitionGroup = Math.floor(Math.random() * config.transitionGroups);
-    this.randomSizeAssigned = false; // Reset random size flag after transition
-
-    // Update wiggle properties
-    this.wigglePhaseOffset = Math.random() * Math.PI * 2;
-    this.wiggleDirection = Math.random() * Math.PI * 2;
-    this.wiggleFactor = 0.5 + Math.random();
-
-    // Update usage flags after transition
-    this.isUsedInCurrentPhrase = this.isUsedInNextPhrase;
-  }
-
-  reset() {
-      // A general reset for particles that might be re-used
-      this.x = Math.random() * canvas.width;
-      this.y = Math.random() * canvas.height;
-      this.vx = 0;
-      this.vy = 0;
-      this.t = Math.random() * 1000;
-      this.transitionDelay = Math.random() * 0.5;
-      this.individualProgress = 0;
-      this.arcHeight = (Math.random() * 0.5 + 0.5) * 200;
-      this.arcDirection = Math.random() > 0.5 ? 1 : -1;
-      this.mouseExposure = 0;
-      this.isAffectedByMouse = false;
-      this.transitionGroup = Math.floor(Math.random() * config.transitionGroups);
-
-      // Reset path properties
-      if (config.figure8Variation) {
-        this.figure8Size = config.figure8Size * (0.5 + Math.random() * 0.5);
-        this.figure8Angle = Math.random() * Math.PI * 2;
-        this.figure8Direction = Math.random() > 0.5 ? 1 : -1;
-      }
-
-      this.bezierControlPoint1 = {
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height
-      };
-      this.bezierControlPoint2 = {
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height
-      };
-      this.pathRandomization = Math.random() * config.maxPathRandomization;
-      this.randomSizeAssigned = false; // Reset random size flag
-
-      // Reset wiggle properties
-      this.wigglePhaseOffset = Math.random() * Math.PI * 2;
-      this.wiggleDirection = Math.random() * Math.PI * 2;
-      this.wiggleFactor = 0.5 + Math.random();
   }
 }
 
-function getTargetPoints(text) {
-  if (cachedTargetPoints[text]) {
-    return cachedTargetPoints[text];
-  }
+// ========================
+// TEXT RENDERING FUNCTIONS
+// ========================
 
+// Generate coordinates for target text points
+function getTargetPoints(text, fontSize = config.fontSize, spacing = config.pointSpacing, lineHeight = config.lineHeight) {
+  const lines = text.split('\n').map(t => t.trim()).filter(Boolean);
   const offCanvas = document.createElement("canvas");
   const offCtx = offCanvas.getContext("2d");
+  const width = 1600;
+  const height = lines.length * lineHeight;
+  offCanvas.width = width;
+  offCanvas.height = height;
 
-  offCtx.font = `${config.fontSize}px Arial, sans-serif`;
-  offCtx.textBaseline = "top"; // Important for consistent vertical positioning
-  offCtx.fillStyle = "black"; // Ensure text is drawn in black for pixel detection
-
-  const lines = text.split('\n');
-  let maxWidth = 0;
-  // Measure each line to find the maximum width needed for the off-screen canvas
-  lines.forEach(line => {
-    const lineWidth = offCtx.measureText(line).width;
-    if (lineWidth > maxWidth) {
-      maxWidth = lineWidth;
-    }
-  });
-
-  const totalTextHeight = lines.length * config.lineHeight;
-
-  // Set off-screen canvas dimensions dynamically based on measured content
-  offCanvas.width = maxWidth + 50; // Add some padding to prevent clipping
-  offCanvas.height = totalTextHeight;
-
-  // Clear the off-screen canvas before drawing
-  offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
-  offCtx.font = `${config.fontSize}px Arial, sans-serif`; // Re-set font after canvas resize
+  offCtx.fillStyle = "white";
   offCtx.textBaseline = "top";
-  offCtx.fillStyle = "black";
+  offCtx.font = `${fontSize}px 'Satoshi', sans-serif`;
 
-  // Draw each line onto the off-screen canvas
-  lines.forEach((line, index) => {
-    const lineWidth = offCtx.measureText(line).width;
-    const lineX = (offCanvas.width - lineWidth) / 2; // Center each line horizontally
-    const lineY = index * config.lineHeight; // Position lines vertically
-    offCtx.fillText(line, lineX, lineY);
+  // Draw each line of text centered horizontally
+  lines.forEach((line, i) => {
+    const textWidth = offCtx.measureText(line).width;
+    offCtx.fillText(line, (width - textWidth) / 2, i * lineHeight);
   });
 
-  const imageData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
+  // Extract points from pixels where text was drawn
+  const imageData = offCtx.getImageData(0, 0, width, height);
   const points = [];
-
-  // Calculate the overall offset to center the entire block of text on the main canvas
-  const offsetX = canvas.width / 2 - offCanvas.width / 2;
-  const offsetY = canvas.height / 2 - offCanvas.height / 2;
-
-  for (let y = 0; y < offCanvas.height; y += config.pointSpacing) {
-    for (let x = 0; x < offCanvas.width; x += config.pointSpacing) {
-      const i = (y * offCanvas.width + x) * 4;
-      if (imageData.data[i + 3] > 128) { // Check alpha channel for pixel presence
+  for (let y = 0; y < height; y += spacing) {
+    for (let x = 0; x < width; x += spacing) {
+      const i = (y * width + x) * 4;
+      if (imageData.data[i + 3] > 128) {
+        // Calculate offset to center text on screen
+        const offsetX = canvas.width / 2 - width / 2;
+        const offsetY = canvas.height / 2 - height / 2 - 60;
         points.push({ x: x + offsetX, y: y + offsetY });
       }
     }
   }
-  cachedTargetPoints[text] = points;
   return points;
 }
 
-// Function to calculate text center
-function calculateTextCenter() {
-  const targets = cachedTargetPoints[config.textPhrases[currentPhraseIndex]];
-  if (!targets || targets.length === 0) return { x: canvas.width / 2, y: canvas.height / 2 };
+// ===========================
+// TEXT MORPHING & TRANSITIONS
+// ===========================
 
-  // Calculate average of all points
-  let sumX = 0, sumY = 0;
-  targets.forEach(point => {
-    sumX += point.x;
-    sumY += point.y;
+// Transition from current text to new text
+function morphToNewText(text) {
+  // Generate point coordinates for new text
+  const targets = getTargetPoints(text);
+
+  // Set existing particles to dying with varied timing
+  particles.forEach(p => {
+    p.state = "dying";
+    // Stagger the timing for more organic fading
+    p.dyingDelay = Math.floor(Math.random() * 80);
+    p.dyingTimer = config.dyingDuration;
   });
 
-  return {
-    x: sumX / targets.length,
-    y: sumY / targets.length
-  };
-}
+  // Create or repurpose particles for new text
+  for (let i = 0; i < targets.length; i++) {
+    const t = targets[i];
+    // Try to reuse an existing particle before creating a new one
+    let p = particles.find(p => p.state === "dying");
 
-// Function to update mouse radius based on proximity to text center
-function updateMouseRadius() {
-  if (mouse.x === null || mouse.y === null) {
-    mouse.radius = config.mouseRadiusDefault;
-    return;
+    if (p) {
+      // Repurpose existing particle
+      p.homeX = t.x;
+      p.homeY = t.y;
+      p.state = "flocking";
+
+      // Configure exploration phase based on user settings
+      p.explorationPhase = Math.floor(
+        Math.random() *
+        (config.explorationDuration.max - config.explorationDuration.min) +
+        config.explorationDuration.min
+      );
+
+      p.explorationStrength =
+        config.explorationStrength.min +
+        Math.random() * (config.explorationStrength.max - config.explorationStrength.min);
+
+      p.resolveDelay = Math.floor(
+        Math.random() *
+        (config.resolveDelay.max - config.resolveDelay.min) +
+        config.resolveDelay.min
+      );
+
+      p.liftOffDelay = Math.floor(Math.random() * config.liftOffDelay.max);
+
+      // Reset death-related properties
+      p.dyingTimer = config.dyingDuration;
+      p.opacity = Math.min(p.opacity, 1);
+
+      // Give particles initial velocity for dramatic lift-off
+      const angle = Math.random() * Math.PI * 2;
+      const force =
+        config.initialForce.min +
+        Math.random() * (config.initialForce.max - config.initialForce.min);
+
+      p.vx += Math.cos(angle) * force * p.energy;
+      p.vy += Math.sin(angle) * force * p.energy;
+    } else {
+      // Create new particle
+      const nearby = Math.random() < 0.5; // More varied starting positions
+      const spawnX = nearby ? t.x + (Math.random() - 0.5) * 200 : Math.random() * canvas.width;
+      const spawnY = nearby ? t.y + (Math.random() - 0.5) * 200 : Math.random() * canvas.height;
+
+      p = new Particle(t.x, t.y, spawnX, spawnY);
+      p.state = "flocking";
+
+      // Configure exploration using current config
+      p.explorationPhase = Math.floor(
+        Math.random() *
+        (config.explorationDuration.max - config.explorationDuration.min) +
+        config.explorationDuration.min
+      );
+
+      p.explorationStrength =
+        config.explorationStrength.min +
+        Math.random() * (config.explorationStrength.max - config.explorationStrength.min);
+
+      p.resolveDelay = Math.floor(
+        Math.random() *
+        (config.resolveDelay.max - config.resolveDelay.min) +
+        config.resolveDelay.min
+      );
+
+      p.liftOffDelay = Math.floor(Math.random() * config.liftOffDelay.max);
+
+      // More dramatic entrance
+      const angle = Math.random() * Math.PI * 2;
+      const force =
+        config.initialForce.min +
+        Math.random() * (config.initialForce.max - config.initialForce.min);
+
+      p.vx = Math.cos(angle) * force * p.energy;
+      p.vy = Math.sin(angle) * force * p.energy;
+
+      particles.push(p);
+    }
   }
-
-  // Calculate distance to text center
-  const dx = mouse.x - textCenter.x;
-  const dy = mouse.y - textCenter.y;
-  const distanceToCenter = Math.sqrt(dx * dx + dy * dy);
-
-  // Scale radius based on distance to center (closer = larger radius)
-  if (distanceToCenter <= config.mouseProximityRange) {
-    // Linear interpolation between max and min radius
-    const t = 1 - (distanceToCenter / config.mouseProximityRange);
-    mouse.radius = config.mouseRadiusMin + t * (config.mouseRadiusMax - config.mouseRadiusMin);
-  } else {
-    // Beyond the range, use minimum radius
-    mouse.radius = config.mouseRadiusMin;
-  }
 }
 
-function initializeOrUpdateParticles() {
-  // Pre-calculate and cache all target points initially
-  config.textPhrases.forEach(phrase => getTargetPoints(phrase));
+// ===================
+// ANIMATION FUNCTIONS
+// ===================
 
-  const currentTargets = cachedTargetPoints[config.textPhrases[currentPhraseIndex]];
-  const nextTargets = cachedTargetPoints[config.textPhrases[nextPhraseIndex]];
+// Initialize once fonts are loaded
+document.fonts.ready.then(() => {
+  morphToNewText(texts[0]);
+  animate();
+  setupControlListeners();
+});
 
-  // Determine the maximum number of particles needed across all phrases
-  const maxParticlesNeeded = Math.max(...config.textPhrases.map(phrase => cachedTargetPoints[phrase].length));
-
-  // Add new particles if needed
-  while (particles.length < maxParticlesNeeded) {
-    const initialHome = currentTargets[0] || {x: canvas.width / 2, y: canvas.height / 2};
-    particles.push(new Particle(initialHome.x, initialHome.y, initialHome.x, initialHome.y));
-  }
-
-  // Update existing particles' home and nextHome positions based on current and next text
-  particles.forEach((p, i) => {
-    // Current home position
-    if (i < currentTargets.length) {
-      p.homeX = currentTargets[i].x;
-      p.homeY = currentTargets[i].y;
-      p.isUsedInCurrentPhrase = true;
-    } else {
-      // If the current text is shorter, assign excess particles to random positions across the canvas
-      p.homeX = Math.random() * canvas.width;
-      p.homeY = Math.random() * canvas.height;
-      p.isUsedInCurrentPhrase = false;
-    }
-
-    // Next home position
-    if (i < nextTargets.length) {
-      p.nextHomeX = nextTargets[i].x;
-      p.nextHomeY = nextTargets[i].y;
-      p.isUsedInNextPhrase = true;
-    } else {
-      // If the next text is shorter, assign excess particles to random positions
-      p.nextHomeX = Math.random() * canvas.width;
-      p.nextHomeY = Math.random() * canvas.height;
-      p.isUsedInNextPhrase = false;
-    }
-
-    // Set colors
-    p.baseColor = [...colorSchemes[currentColorScheme].base];
-    p.activeColor = [...colorSchemes[currentColorScheme].active];
-    p.nextBaseColor = [...colorSchemes[nextColorScheme].base];
-    p.nextActiveColor = [...colorSchemes[nextColorScheme].active];
-
-    // Reset particle specific transition state
-    p.reset();
-
-    // FIXED: Force proper size assignment after reset
-    p.randomSizeAssigned = false;
-    if (p.isUsedInCurrentPhrase) {
-      if (config.randomizeActiveParticleSize) {
-        p.targetSize = Math.random() * (config.maxParticleSize - config.minParticleSize) + config.minParticleSize;
-        p.size = p.targetSize; // Set size immediately instead of transitioning
-        p.randomSizeAssigned = true;
-      } else {
-        p.targetSize = config.maxParticleSize;
-        p.size = p.targetSize;
-      }
-    } else {
-      p.targetSize = config.minParticleSize;
-      p.size = p.targetSize;
-    }
-  });
-
-  // Calculate text center
-  textCenter = calculateTextCenter();
-}
-
-function startTransition() {
-  if (isTransitioning) return;
-
-  const now = Date.now();
-  if (now - lastTransitionTime < config.transitionCooldown) return;
-
-  lastTransitionTime = now;
-  isTransitioning = true;
-  transitionProgress = 0;
-
-  // Prepare next text positions by calculating the targets for the next phrase
-  nextPhraseIndex = (currentPhraseIndex + 1) % config.textPhrases.length;
-  const nextTargets = cachedTargetPoints[config.textPhrases[nextPhraseIndex]];
-
-  // Update next color scheme
-  nextColorScheme = (currentColorScheme + 1) % colorSchemes.length;
-
-  // Update particles with their new target positions and colors
-  particles.forEach((p, i) => {
-    if (i < nextTargets.length) {
-      p.setNextPosition(nextTargets[i].x, nextTargets[i].y);
-      p.isUsedInNextPhrase = true;
-    } else {
-      // For particles that won't be part of the next text, set them to random positions
-      p.setNextPosition(Math.random() * canvas.width, Math.random() * canvas.height);
-      p.isUsedInNextPhrase = false;
-    }
-    p.setNextColors(
-      colorSchemes[nextColorScheme].base,
-      colorSchemes[nextColorScheme].active
-    );
-  });
-}
-
-function endTransition() {
-  isTransitioning = false;
-  currentPhraseIndex = nextPhraseIndex;
-  currentColorScheme = nextColorScheme;
-
-  // Commit the transition for all particles
-  particles.forEach(p => p.commitTransition());
-
-  // After transition, re-evaluate target points for the *new* next phrase
-  const nextNextPhraseIndex = (currentPhraseIndex + 1) % config.textPhrases.length;
-  const nextNextTargets = cachedTargetPoints[config.textPhrases[nextNextPhraseIndex]];
-  const nextNextColorScheme = (currentColorScheme + 1) % colorSchemes.length;
-
-  particles.forEach((p, i) => {
-      if (i < nextNextTargets.length) {
-          // This particle will be part of the *next* next phrase
-          p.nextHomeX = nextNextTargets[i].x;
-          p.nextHomeY = nextNextTargets[i].y;
-          p.isUsedInNextPhrase = true;
-      } else {
-          // This particle won't be part of the *next* next phrase, set to random position
-          p.nextHomeX = Math.random() * canvas.width;
-          p.nextHomeY = Math.random() * canvas.height;
-          p.isUsedInNextPhrase = false;
-      }
-
-      // Update next colors
-      p.nextBaseColor = [...colorSchemes[nextNextColorScheme].base];
-      p.nextActiveColor = [...colorSchemes[nextNextColorScheme].active];
-  });
-
-  // Update text center after transition
-  textCenter = calculateTextCenter();
-}
-
+// Main animation loop
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Update mouse radius based on distance to text center
-  updateMouseRadius();
-
-  affectedParticlesCount = 0;
-  particles.forEach(p => {
-    if (p.isAffectedByMouse) affectedParticlesCount++;
-  });
-
-  if (!isTransitioning && affectedParticlesCount > config.mouseTransitionThreshold) {
-    startTransition();
-  }
-
-  if (isTransitioning) {
-    transitionProgress += 0.01;
-    if (transitionProgress >= 1.5) {
-      endTransition();
-    }
-  }
-
+  // Remove dead particles
+  particles = particles.filter(p => !p.dead);
+  // Update and draw remaining particles
   particles.forEach(p => p.update());
-
-  // DEBUG: Draw text center point and active mouse radius
-  if (config.debug) {
-    ctx.beginPath();
-    ctx.arc(textCenter.x, textCenter.y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255, 0, 0, 0.8)";
-    ctx.fill();
-
-    if (mouse.x !== null && mouse.y !== null) {
-      ctx.beginPath();
-      ctx.arc(mouse.x, mouse.y, mouse.radius, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(255, 0, 0, 0.3)";
-      ctx.stroke();
-    }
-  }
-
   requestAnimationFrame(animate);
 }
 
-// Event listeners
+// =======================
+// EVENT LISTENERS
+// =======================
+
+// Text change button
+document.getElementById("changeTextBtn").addEventListener("click", () => {
+  textIndex = (textIndex + 1) % texts.length;
+  morphToNewText(texts[textIndex]);
+});
+
+// Regenerate current text button
+document.getElementById("regenerateText").addEventListener("click", () => {
+  morphToNewText(texts[textIndex]);
+});
+
+// Mouse movement
 window.addEventListener("mousemove", (e) => {
   mouse.x = e.clientX;
   mouse.y = e.clientY;
 });
 
-window.addEventListener("mouseout", () => {
-  mouse.x = null;
-  mouse.y = null;
-});
-
+// Window resize
 window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+});
 
-  // Clear the cache so text positions will be recalculated
-  Object.keys(cachedTargetPoints).forEach(key => {
-    delete cachedTargetPoints[key];
+// Toggle control panel
+document.getElementById("togglePanel").addEventListener("click", function() {
+  const panel = document.getElementById("controlPanel");
+  const isHidden = panel.style.display === "none";
+  panel.style.display = isHidden ? "block" : "none";
+  this.textContent = isHidden ? "Hide Controls" : "Show Controls";
+});
+
+// Apply preset button
+document.getElementById("applyPreset").addEventListener("click", function() {
+  const selectedPreset = document.getElementById("presetSelect").value;
+  if (presets[selectedPreset]) {
+    // Apply the selected preset
+    Object.assign(config, presets[selectedPreset]);
+    // Update all sliders to match the new config
+    updateSliderValues();
+  }
+});
+
+// ======================
+// CONTROL PANEL SETUP
+// ======================
+
+function setupControlListeners() {
+  // Set up event listeners for all sliders
+
+  // Particle Personality
+  setupRangeSliders("energyMin", "energyMax", "energyRangeValue",
+                    value => config.energyRange.min = parseFloat(value),
+                    value => config.energyRange.max = parseFloat(value),
+                    () => `${config.energyRange.min.toFixed(1)} - ${config.energyRange.max.toFixed(1)}`);
+
+  setupRangeSliders("curiosityMin", "curiosityMax", "curiosityRangeValue",
+                    value => config.curiosityRange.min = parseFloat(value),
+                    value => config.curiosityRange.max = parseFloat(value),
+                    () => `${config.curiosityRange.min.toFixed(1)} - ${config.curiosityRange.max.toFixed(1)}`);
+
+  setupSlider("patience", "patienceValue",
+              value => config.patienceVariation = parseFloat(value),
+              () => config.patienceVariation.toFixed(1));
+
+  // Flocking Behavior
+  setupSlider("waveStrength", "waveStrengthValue",
+              value => config.waveStrength = parseFloat(value),
+              () => config.waveStrength.toFixed(2));
+
+  setupRangeSliders("explorationDurationMin", "explorationDurationMax", "explorationDurationValue",
+                    value => config.explorationDuration.min = parseInt(value),
+                    value => config.explorationDuration.max = parseInt(value),
+                    () => `${config.explorationDuration.min}-${config.explorationDuration.max}`);
+
+  setupRangeSliders("explorationStrengthMin", "explorationStrengthMax", "explorationIntensityValue",
+                    value => config.explorationStrength.min = parseFloat(value),
+                    value => config.explorationStrength.max = parseFloat(value),
+                    () => `${config.explorationStrength.min.toFixed(1)}-${config.explorationStrength.max.toFixed(1)}`);
+
+  setupRangeSliders("resolveDelayMin", "resolveDelayMax", "resolveDelayValue",
+                    value => config.resolveDelay.min = parseInt(value),
+                    value => config.resolveDelay.max = parseInt(value),
+                    () => `${config.resolveDelay.min}-${config.resolveDelay.max}`);
+
+  // Movement Physics
+  setupSlider("velocityDamping", "velocityDampingValue",
+              value => config.velocityDamping = parseFloat(value),
+              () => config.velocityDamping.toFixed(2));
+
+  setupRangeSliders("initialForceMin", "initialForceMax", "initialForceValue",
+                    value => config.initialForce.min = parseFloat(value),
+                    value => config.initialForce.max = parseFloat(value),
+                    () => `${config.initialForce.min}-${config.initialForce.max}`);
+
+  setupSlider("homingStrength", "homingStrengthValue",
+              value => config.homingStrength = parseFloat(value),
+              () => config.homingStrength.toFixed(3));
+
+  setupSlider("wanderingIntensity", "wanderingIntensityValue",
+              value => config.wanderingIntensity = parseFloat(value),
+              () => config.wanderingIntensity.toFixed(2));
+
+  // Mouse Interaction
+  setupSlider("mouseRadius", "mouseRadiusValue",
+              value => {
+                config.mouseRadius = parseInt(value);
+                mouse.radius = config.mouseRadius;
+              },
+              () => config.mouseRadius);
+
+  setupSlider("repulsionForce", "repulsionForceValue",
+              value => config.repulsionForce = parseFloat(value),
+              () => config.repulsionForce.toFixed(1));
+
+  // Animation Timings
+  setupSlider("liftOffDelayMax", "liftOffDelayValue",
+              value => config.liftOffDelay.max = parseInt(value),
+              () => `0-${config.liftOffDelay.max}`);
+
+  setupSlider("dyingDuration", "dyingDurationValue",
+              value => config.dyingDuration = parseInt(value),
+              () => config.dyingDuration);
+
+  setupSlider("opacityFade", "opacityFadeValue",
+              value => config.opacityFadeRate = parseFloat(value),
+              () => config.opacityFadeRate.toFixed(3));
+
+  // Text Settings
+  setupSlider("fontSize", "fontSizeValue",
+              value => config.fontSize = parseInt(value),
+              () => config.fontSize);
+
+  setupSlider("pointSpacing", "pointSpacingValue",
+              value => config.pointSpacing = parseInt(value),
+              () => config.pointSpacing);
+
+  setupSlider("lineHeight", "lineHeightValue",
+              value => config.lineHeight = parseInt(value),
+              () => config.lineHeight);
+}
+
+// Helper function for setting up individual sliders
+function setupSlider(sliderId, valueId, updateConfig, getValueText) {
+  const slider = document.getElementById(sliderId);
+  const valueDisplay = document.getElementById(valueId);
+
+  // Set initial value
+  valueDisplay.textContent = getValueText();
+
+  // Add change listener
+  slider.addEventListener("input", function() {
+    updateConfig(this.value);
+    valueDisplay.textContent = getValueText();
+  });
+}
+
+// Helper function for setting up min-max range sliders
+function setupRangeSliders(minSliderId, maxSliderId, valueId, updateMinConfig, updateMaxConfig, getValueText) {
+  const minSlider = document.getElementById(minSliderId);
+  const maxSlider = document.getElementById(maxSliderId);
+  const valueDisplay = document.getElementById(valueId);
+
+  // Set initial value
+  valueDisplay.textContent = getValueText();
+
+  // Add change listeners
+  minSlider.addEventListener("input", function() {
+    const minVal = parseFloat(this.value);
+    const maxVal = parseFloat(maxSlider.value);
+
+    // Ensure min doesn't exceed max
+    if (minVal > maxVal) {
+      maxSlider.value = minVal;
+      updateMaxConfig(minVal);
+    }
+
+    updateMinConfig(minVal);
+    valueDisplay.textContent = getValueText();
   });
 
-  // Re-initialize/update particle positions on resize
-  initializeOrUpdateParticles();
-});
+  maxSlider.addEventListener("input", function() {
+    const minVal = parseFloat(minSlider.value);
+    const maxVal = parseFloat(this.value);
 
-// Key press to toggle effects
-window.addEventListener("keydown", (e) => {
-  if (e.key === "1") {
-    config.easingFunction = "easeOutCubic";
-    console.log("Easing: easeOutCubic");
-  } else if (e.key === "2") {
-    config.easingFunction = "easeInOutQuint";
-    console.log("Easing: easeInOutQuint");
-  } else if (e.key === "3") {
-    config.easingFunction = "easeOutElastic";
-    console.log("Easing: easeOutElastic");
-  } else if (e.key === "4") {
-    config.easingFunction = "easeInOutSine";
-    console.log("Easing: easeInOutSine");
-  } else if (e.key === "p") {
-    // Change this to cycle between path types
-    const pathTypes = ["figure8", "arc", "bezier"];
-    const currentIndex = pathTypes.indexOf(config.pathType);
-    config.pathType = pathTypes[(currentIndex + 1) % pathTypes.length];
-    particles.forEach(p => p.pathType = config.pathType);
-    console.log("Path Type:", config.pathType);
-  } else if (e.key === "c") {
-    config.colorTransition = !config.colorTransition;
-    console.log("Color Transition:", config.colorTransition);
-  } else if (e.key === "g") {
-    config.groupTransition = !config.groupTransition;
-    console.log("Group Transition:", config.groupTransition);
-  } else if (e.key === "r") {
-    config.randomizeActiveParticleSize = !config.randomizeActiveParticleSize;
-    console.log("Random Particle Sizes:", config.randomizeActiveParticleSize);
-  } else if (e.key === "f") {
-    // NEW: Toggle figure8 variation
-    config.figure8Variation = !config.figure8Variation;
-    console.log("Figure-8 Variation:", config.figure8Variation);
-  } else if (e.key === "w") {
-    // Toggle wiggle effect
-    config.wiggleEnabled = !config.wiggleEnabled;
-    console.log("Wiggle Effect:", config.wiggleEnabled);
-  } else if (e.key === "d") {
-    // Toggle debug visualization
-    config.debug = !config.debug;
-    console.log("Debug Mode:", config.debug);
-  } else if (e.key === " ") {
-    startTransition(); // Space bar to force transition
-  }
+    // Ensure max doesn't go below min
+    if (maxVal < minVal) {
+      minSlider.value = maxVal;
+      updateMinConfig(maxVal);
+    }
 
-  // NEW: Size adjustment for figure-8
-  else if (e.key === "+") {
-    config.figure8Size += 10;
-    console.log("Figure-8 Size:", config.figure8Size);
-  } else if (e.key === "-") {
-    config.figure8Size = Math.max(10, config.figure8Size - 10);
-    console.log("Figure-8 Size:", config.figure8Size);
-  }
-});
+    updateMaxConfig(maxVal);
+    valueDisplay.textContent = getValueText();
+  });
+}
 
-// Initialize debug flag
-config.debug = false;
+// Update all slider values based on current config
+function updateSliderValues() {
+  // Particle Personality
+  document.getElementById("energyMin").value = config.energyRange.min;
+  document.getElementById("energyMax").value = config.energyRange.max;
+  document.getElementById("energyRangeValue").textContent = `${config.energyRange.min.toFixed(1)} - ${config.energyRange.max.toFixed(1)}`;
 
-// Start the animation only after fonts are loaded and particles are set up
-document.fonts.ready.then(() => {
-  initializeOrUpdateParticles();
-  animate();
-});
+  document.getElementById("curiosityMin").value = config.curiosityRange.min;
+  document.getElementById("curiosityMax").value = config.curiosityRange.max;
+  document.getElementById("curiosityRangeValue").textContent = `${config.curiosityRange.min.toFixed(1)} - ${config.curiosityRange.max.toFixed(1)}`;
+
+  document.getElementById("patience").value = config.patienceVariation;
+  document.getElementById("patienceValue").textContent = config.patienceVariation.toFixed(1);
+
+  // Flocking Behavior
+  document.getElementById("waveStrength").value = config.waveStrength;
+  document.getElementById("waveStrengthValue").textContent = config.waveStrength.toFixed(2);
+
+  document.getElementById("explorationDurationMin").value = config.explorationDuration.min;
+  document.getElementById("explorationDurationMax").value = config.explorationDuration.max;
+  document.getElementById("explorationDurationValue").textContent = `${config.explorationDuration.min}-${config.explorationDuration.max}`;
+
+  document.getElementById("explorationStrengthMin").value = config.explorationStrength.min;
+  document.getElementById("explorationStrengthMax").value = config.explorationStrength.max;
+  document.getElementById("explorationIntensityValue").textContent = `${config.explorationStrength.min.toFixed(1)}-${config.explorationStrength.max.toFixed(1)}`;
+
+  document.getElementById("resolveDelayMin").value = config.resolveDelay.min;
+  document.getElementById("resolveDelayMax").value = config.resolveDelay.max;
+  document.getElementById("resolveDelayValue").textContent = `${config.resolveDelay.min}-${config.resolveDelay.max}`;
+
+  // Movement Physics
+  document.getElementById("velocityDamping").value = config.velocityDamping;
+  document.getElementById("velocityDampingValue").textContent = config.velocityDamping.toFixed(2);
+
+  document.getElementById("initialForceMin").value = config.initialForce.min;
+  document.getElementById("initialForceMax").value = config.initialForce.max;
+  document.getElementById("initialForceValue").textContent = `${config.initialForce.min}-${config.initialForce.max}`;
+
+  document.getElementById("homingStrength").value = config.homingStrength;
+  document.getElementById("homingStrengthValue").textContent = config.homingStrength.toFixed(3);
+
+  document.getElementById("wanderingIntensity").value = config.wanderingIntensity;
+  document.getElementById("wanderingIntensityValue").textContent = config.wanderingIntensity.toFixed(2);
+
+  // Mouse Interaction
+  document.getElementById("mouseRadius").value = config.mouseRadius;
+  document.getElementById("mouseRadiusValue").textContent = config.mouseRadius;
+  mouse.radius = config.mouseRadius;
+
+  document.getElementById("repulsionForce").value = config.repulsionForce;
+  document.getElementById("repulsionForceValue").textContent = config.repulsionForce.toFixed(1);
+
+  // Animation Timings
+  document.getElementById("liftOffDelayMax").value = config.liftOffDelay.max;
+  document.getElementById("liftOffDelayValue").textContent = `0-${config.liftOffDelay.max}`;
+
+  document.getElementById("dyingDuration").value = config.dyingDuration;
+  document.getElementById("dyingDurationValue").textContent = config.dyingDuration;
+
+  document.getElementById("opacityFade").value = config.opacityFadeRate;
+  document.getElementById("opacityFadeValue").textContent = config.opacityFadeRate.toFixed(3);
+
+  // Text Settings
+  document.getElementById("fontSize").value = config.fontSize;
+  document.getElementById("fontSizeValue").textContent = config.fontSize;
+
+  document.getElementById("pointSpacing").value = config.pointSpacing;
+  document.getElementById("pointSpacingValue").textContent = config.pointSpacing;
+
+  document.getElementById("lineHeight").value = config.lineHeight;
+  document.getElementById("lineHeightValue").textContent = config.lineHeight;
+}
 </script>
 </body>
 </html>
